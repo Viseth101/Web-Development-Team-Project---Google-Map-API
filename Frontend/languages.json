@@ -1,20 +1,26 @@
 {
-"th": {
-"title": "แผนที่มหาวิทยาลัยศิลปากร",
-"price_label": "ราคา:",
-"date_label": "วันที่:",
-"loading": "กำลังโหลดข้อมูล..."
-},
-"en": {
-"title": "Silpakorn University Map",
-"price_label": "Price:",
-"date_label": "Date:",
-"loading": "Loading data..."
-},
-"cn": {
-"title": "艺术大学地图",
-"price_label": "价格:",
-"date_label": "日期:",
-"loading": "正在加载数据..."
-}
+  "en": {
+    "title": "Silpakorn Map Test",
+    "navTitle": "Silpakorn Map",
+    "satellite": "Satellite",
+    "darkMode": "Dark Mode",
+    "searchPlaceholder": "Search places...",
+    "open": "Open:"
+  },
+  "th": {
+    "title": "แผนที่มหาวิทยาลัยศิลปากร",
+    "navTitle": "แผนที่ศิลปากร",
+    "satellite": "ดาวเทียม",
+    "darkMode": "โหมดมืด",
+    "searchPlaceholder": "ค้นหาสถานที่...",
+    "open": "เปิด:"
+  },
+  "cn": {
+    "title": "艺术大学地图",
+    "navTitle": "艺术大学地图",
+    "satellite": "卫星图",
+    "darkMode": "深色模式",
+    "searchPlaceholder": "搜索地点...",
+    "open": "营业:"
+  }
 }

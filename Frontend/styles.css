@@ -1,4 +1,6 @@
-/* 1. Reset the page so the map touches the very edges */
+/* ========================================== */
+/* 1. BASE LAYOUT & MAP CONTAINER             */
+/* ========================================== */
 html,
 body {
     margin: 0;
@@ -7,26 +9,23 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* 2. Make the map take up the entire screen */
 #map {
     width: 100vw;
     height: 100vh;
-    /* A subtle background color before the map loads */
     background-color: #e5e3df;
+    /* Subtle loading background */
 }
 
-/* 3. Your future Floating Navbar */
+/* ========================================== */
+/* 2. FLOATING NAVBAR STYLES                  */
+/* ========================================== */
 .floating-navbar {
     position: absolute;
-    /* This makes it float over the map */
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    /* Centers the navbar perfectly */
     z-index: 10;
-    /* Ensures it stays on top of the Google Map */
 
-    /* Styling to make it look nice */
     background-color: rgba(255, 255, 255, 0.95);
     padding: 15px 30px;
     border-radius: 30px;
@@ -36,23 +35,55 @@ body {
     align-items: center;
 }
 
-/* Mock buttons for your future Thai/Eng/Chinese switchers */
-.lang-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    color: #333;
-    padding: 5px 10px;
-    border-radius: 15px;
-    transition: background-color 0.2s;
+/* --- Toggle Switch Animations --- */
+input#satelliteToggle:checked+#satToggleTrack {
+    background-color: #059669;
 }
 
-.lang-btn:hover {
-    background-color: #f0f0f0;
+input#satelliteToggle:checked~#satToggleDot {
+    transform: translateX(100%);
 }
 
-.lang-btn.active {
-    background-color: #007bff;
-    color: white;
+input#darkModeToggle:checked+#toggleTrack {
+    background-color: #059669;
+}
+
+input#darkModeToggle:checked~#toggleDot {
+    transform: translateX(100%);
+}
+
+/* ========================================== */
+/* 3. GOOGLE MAPS COMPONENT OVERRIDES         */
+/* ========================================== */
+
+/* Hide the default 'X' close button */
+button.gm-ui-hover-effect {
+    display: none !important;
+}
+
+/* Remove default padding so our custom box fits */
+.gm-style-iw-c {
+    padding: 0 !important;
+    border-radius: 12px !important;
+}
+
+/* The Pop-in Animation Keyframes */
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Class applied dynamically via JavaScript */
+.animated-popup {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    padding: 16px;
+    min-width: 180px;
+    background-color: white;
 }
