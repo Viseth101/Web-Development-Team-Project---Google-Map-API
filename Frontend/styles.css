@@ -13,77 +13,321 @@ body {
     width: 100vw;
     height: 100vh;
     background-color: #e5e3df;
-    /* Subtle loading background */
 }
 
 /* ========================================== */
-/* 2. FLOATING NAVBAR STYLES                  */
+/* 2. MAP CONTROL BOXES (DESKTOP)             */
 /* ========================================== */
-.floating-navbar {
+.map-control {
     position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
     z-index: 10;
-
     background-color: rgba(255, 255, 255, 0.95);
-    padding: 15px 30px;
-    border-radius: 30px;
+    color: #1f2937;
+    border-radius: 16px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Box 1: Logo (Top Left) */
+.top-left-logo {
+    top: 20px;
+    left: 20px;
+    padding: 10px 16px;
     display: flex;
-    gap: 20px;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-left-logo img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.top-left-logo strong {
+    font-size: 1.2rem;
+    white-space: nowrap;
+}
+
+/* Box 2: Search (Top Right) */
+.top-right-search {
+    top: 20px;
+    right: 20px;
+    padding: 8px;
+    display: flex;
     align-items: center;
 }
 
-/* --- Toggle Switch Animations --- */
-input#satelliteToggle:checked+#satToggleTrack {
+.top-right-search input {
+    padding: 10px 10px 10px 32px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    width: 240px;
+    font-size: 14px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 18px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Box 3: Toggles & Language (Bottom Left) */
+.bottom-left-controls {
+    bottom: 30px;
+    left: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#lang-select {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Toggle Switches */
+.toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.toggle-wrapper {
+    position: relative;
+    width: 40px;
+    height: 24px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.toggle-track {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: #d1d5db;
+    border-radius: 999px;
+    transition: 0.3s;
+}
+
+.toggle-dot {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    background-color: white;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+input#satelliteToggle:checked+.toggle-track {
     background-color: #059669;
 }
 
-input#satelliteToggle:checked~#satToggleDot {
-    transform: translateX(100%);
+input#satelliteToggle:checked~.toggle-dot {
+    transform: translateX(16px);
 }
 
-input#darkModeToggle:checked+#toggleTrack {
+input#darkModeToggle:checked+.toggle-track {
     background-color: #059669;
 }
 
-input#darkModeToggle:checked~#toggleDot {
-    transform: translateX(100%);
+input#darkModeToggle:checked~.toggle-dot {
+    transform: translateX(16px);
 }
 
 /* ========================================== */
-/* 3. GOOGLE MAPS COMPONENT OVERRIDES         */
+/* 3. MOBILE MEDIA QUERY (Layout Fix)         */
 /* ========================================== */
+@media (max-width: 550px) {
 
-/* Hide the default 'X' close button */
+    /* Top Left: Logo & Title Area */
+    .top-left-logo {
+        top: 12px;
+        left: 10px;
+        padding: 12px 14px;
+        max-width: 45%;
+        border-radius: 12px;
+    }
+
+    .top-left-logo strong {
+        font-size: 1.05rem;
+    }
+
+    .top-left-logo img {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Top Right: Search Box */
+    .top-right-search {
+        top: 12px;
+        right: 10px;
+        padding: 8px;
+        border-radius: 12px;
+    }
+
+    .top-right-search input {
+        width: 140px;
+        /* Reduced slightly to ensure no overlap */
+        font-size: 14px;
+        padding: 10px 8px 8px 32px;
+    }
+
+    /* Bottom: Controls Row Fix */
+    .bottom-left-controls {
+        bottom: 25px;
+        left: 10px;
+        right: 10px;
+        display: flex;
+        /* Using flex instead of grid for better control */
+        flex-direction: row;
+        justify-content: space-between;
+        /* Spreads Satellite, Dark Mode, and Lang evenly */
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 16px;
+        width: calc(100% - 20px);
+        /* Ensures it doesn't touch screen edges */
+        box-sizing: border-box;
+    }
+
+    /* Fix: Prevent Language Dropdown from squashing other items */
+    #lang-select {
+        font-size: 13px;
+        padding: 6px 10px;
+        width: 100px;
+        /* FIXED WIDTH to prevent squashing toggles */
+        min-width: 100px;
+        margin-left: 10px;
+    }
+
+    .toggle-label {
+        font-size: 0.85rem;
+        gap: 6px;
+        white-space: nowrap;
+        /* Prevents text like "Dark Mode" from breaking into 2 lines */
+    }
+
+    .toggle-wrapper {
+        width: 44px;
+        height: 26px;
+    }
+
+    .toggle-dot {
+        width: 18px;
+        height: 18px;
+        top: 4px;
+        left: 4px;
+    }
+}
+
+/* ========================================== */
+/* 4. SMALL MOBILE MEDIA QUERY (<= 400px)     */
+/* ========================================== */
+@media (max-width: 400px) {
+
+    /* 1. Center the Logo & Title at the very top */
+    .top-left-logo {
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 85%;
+        justify-content: center;
+        width: max-content;
+    }
+
+    /* 2. Center the Search Box right below the Logo */
+    .top-right-search {
+        top: 75px;
+        /* Pushed down to avoid overlapping the logo */
+        left: 50%;
+        right: auto;
+        /* Cancels out the 'right: 10px' from the 550px query */
+        transform: translateX(-50%);
+        width: max-content;
+    }
+
+    .top-right-search input {
+        width: 220px;
+        /* Gives it a nice centered width */
+        font-size: 14px;
+        padding: 10px 8px 10px 32px;
+    }
+
+    /* 3. Revert Bottom Controls to a compact vertical column */
+    .bottom-left-controls {
+        flex-direction: column;
+        /* Stack them vertically again */
+        width: auto;
+        /* Cancels the 100% full-width */
+        right: auto;
+        /* Stops it from stretching to the right edge */
+        align-items: flex-start;
+        /* Align toggles to the left */
+        gap: 12px;
+        padding: 12px 16px;
+    }
+
+    /* 4. Fix Language Select margin from the 550px query */
+    #lang-select {
+        margin-left: 0;
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* ========================================== */
+/* 5. DARK MODE THEME CLASS                   */
+/* ========================================== */
+body.dark-theme .map-control {
+    background-color: rgba(30, 30, 30, 0.95);
+    color: white;
+}
+
+body.dark-theme .top-right-search input,
+body.dark-theme #lang-select {
+    background-color: #374151;
+    color: white;
+    border-color: #4B5563;
+}
+
+/* ========================================== */
+/* 5. GOOGLE MAPS POPUP OVERRIDES             */
+/* ========================================== */
 button.gm-ui-hover-effect {
     display: none !important;
 }
 
-/* Remove default padding so our custom box fits */
 .gm-style-iw-c {
     padding: 0 !important;
     border-radius: 12px !important;
 }
 
-/* The Pop-in Animation Keyframes */
-@keyframes popIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.8) translateY(10px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-/* Class applied dynamically via JavaScript */
 .animated-popup {
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     padding: 16px;
     min-width: 180px;
     background-color: white;
+    opacity: 1;
+    /* Keeping it solid for visibility */
 }

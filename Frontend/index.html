@@ -4,55 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="title">Silpakorn Map Test</title>
+    <title data-i18n="title">Silpakorn Map</title>
     <link rel="icon" type="image/x-icon" href="./assets/silpakorn-icon.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
+    <div class="map-control top-left-logo">
+        <img src="./assets/silpakorn-icon.png" alt="Silpakorn Logo">
+        <strong data-i18n="navTitle">Silpakorn Map</strong>
+    </div>
 
-    <div class="floating-navbar text-gray-800 transition-colors duration-300" id="navbar">
+    <div class="map-control top-right-search">
+        <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search places..."
+            onkeyup="searchMarkers()">
+        <span class="search-icon">🔍</span>
+    </div>
 
-        <div class="flex items-center whitespace-nowrap" style="margin-right: 20px;">
-            <img src="./assets/silpakorn-icon.png" alt="Silpakorn Logo" class="w-8 h-8 mr-2 object-contain">
-            <strong class="text-lg" data-i18n="navTitle">Silpakorn Map</strong>
-        </div>
-
-        <label class="flex items-center cursor-pointer mr-4">
-            <span class="mr-2 text-sm font-medium whitespace-nowrap" data-i18n="satellite">Satellite</span>
-            <div class="relative">
+    <div class="map-control bottom-left-controls">
+        <label class="toggle-label">
+            <span data-i18n="satellite">Satellite</span>
+            <div class="toggle-wrapper">
                 <input type="checkbox" id="satelliteToggle" class="sr-only" onchange="toggleSatelliteMode()">
-                <div id="satToggleTrack" class="block bg-gray-300 w-10 h-6 rounded-full transition-colors duration-300">
-                </div>
-                <div id="satToggleDot"
-                    class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300"></div>
+                <div id="satToggleTrack" class="toggle-track"></div>
+                <div id="satToggleDot" class="toggle-dot"></div>
             </div>
         </label>
 
-        <label class="flex items-center cursor-pointer mr-4">
-            <span class="mr-2 text-sm font-medium whitespace-nowrap" data-i18n="darkMode">Dark Mode</span>
-            <div class="relative">
+        <label class="toggle-label">
+            <span data-i18n="darkMode">Dark Mode</span>
+            <div class="toggle-wrapper">
                 <input type="checkbox" id="darkModeToggle" class="sr-only" onchange="toggleDarkMode()">
-                <div id="toggleTrack" class="block bg-gray-300 w-10 h-6 rounded-full transition-colors duration-300">
-                </div>
-                <div id="toggleDot"
-                    class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300"></div>
+                <div id="toggleTrack" class="toggle-track"></div>
+                <div id="toggleDot" class="toggle-dot"></div>
             </div>
         </label>
 
-        <div class="relative mr-4">
-            <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search places..."
-                class="p-2 pl-8 rounded-lg border border-gray-300 bg-white outline-none text-sm w-48 transition-colors duration-300"
-                onkeyup="searchMarkers()">
-            <svg class="w-4 h-4 absolute left-2.5 top-2.5 text-gray-500" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-        </div>
-
-        <select id="lang-select" onchange="changeLanguage(this.value)"
-            class="p-2 rounded-lg border border-gray-300 bg-white outline-none cursor-pointer text-sm transition-colors duration-300">
+        <select id="lang-select" onchange="changeLanguage(this.value)">
             <option value="en">English</option>
             <option value="th">ภาษาไทย</option>
             <option value="cn">中文</option>
@@ -62,7 +50,6 @@
     <div id="map"></div>
 
     <script src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </body>
 
 </html>
