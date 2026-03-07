@@ -28,7 +28,8 @@ async function startApp() {
         if (!config.mapsApiKey) throw new Error("API Key not found.");
 
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${config.mapsApiKey}&callback=initMap`;
+        // FIX: Added &libraries=places to enable Autocomplete API
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${config.mapsApiKey}&libraries=places&callback=initMap`;
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
@@ -37,8 +38,14 @@ async function startApp() {
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 16.1, center: silpakornCoords, disableDefaultUI: true, zoomControl: true,
-        minZoom: 16.45, maxZoom: 20, restriction: { latLngBounds: campusBounds, strictBounds: false },
+        zoom: 16.1,
+        center: silpakornCoords,
+        disableDefaultUI: true,
+        zoomControl: true,
+        minZoom: 16.45,
+        maxZoom: 20,
+        restriction: { latLngBounds: campusBounds, strictBounds: false },
+        styles: cleanLightModeStyles // Start with the clean light styles
     });
 
     infoWindow = new google.maps.InfoWindow();
@@ -53,6 +60,17 @@ function initMap() {
     drawCampusPolygon();
     setupMobileAndFilterListeners();
     setupLocationListener();
+    initAutocomplete();
+}
+
+// ==========================================
+// TOAST NOTIFICATIONS
+// ==========================================
+function showToast(message, type = "success") {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.className = `toast show ${type}`;
+    setTimeout(() => { toast.classList.remove("show"); }, 3000);
 }
 
 // ==========================================
@@ -125,7 +143,6 @@ function toggleLegend() {
 }
 
 function createPin(color) {
-    // Clean, native vector path. No buggy shadow filters, but keeps dynamic colors.
     return {
         path: "M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z",
         fillColor: color,
@@ -282,16 +299,26 @@ function handleSearchInput() {
 }
 
 // ==========================================
-// 6. ADD NEW PLACE & GEOLOCATION
+// 6. ADD NEW PLACE, GEOLOCATION, AUTOCOMPLETE
 // ==========================================
 function setupLocationListener() {
     document.getElementById("locateMeBtn").addEventListener("click", () => {
         if (navigator.geolocation) {
+            const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    
+                    const isOutsideCampus = 
+                        pos.lat < campusBounds.south || pos.lat > campusBounds.north ||
+                        pos.lng < campusBounds.west || pos.lng > campusBounds.east;
+
+                    if (isOutsideCampus) {
+                        map.setOptions({ restriction: null, minZoom: 5 });
+                    }
+
                     map.panTo(pos);
-                    map.setZoom(18);
+                    map.setZoom(17);
 
                     if (!userLocationMarker) {
                         userLocationMarker = new google.maps.Marker({
@@ -300,9 +327,30 @@ function setupLocationListener() {
                         });
                     } else { userLocationMarker.setPosition(pos); }
                 },
-                () => alert("Could not fetch location. Check browser permissions.")
+                (err) => showToast(`Could not fetch location.`, "error"),
+                options
             );
-        } else { alert("Browser doesn't support geolocation."); }
+        } else { showToast("Browser doesn't support geolocation.", "error"); }
+    });
+}
+
+function initAutocomplete() {
+    const input = document.getElementById("placeTitle");
+    const autocomplete = new google.maps.places.Autocomplete(input, {
+        bounds: campusBounds,
+        strictBounds: false
+    });
+
+    autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) return;
+        
+        newPlaceCoords = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
+        
+        const coordsText = document.getElementById("selectedCoordsText");
+        coordsText.innerText = "✅ Location auto-grabbed from Google!";
+        coordsText.style.color = "#059669";
+        coordsText.style.display = "block";
     });
 }
 
@@ -346,7 +394,11 @@ document.getElementById("confirmMarkerBtn").addEventListener("click", () => {
     if (draggableMarker) draggableMarker.setMap(null);
     if (centerChangeListener) { google.maps.event.removeListener(centerChangeListener); centerChangeListener = null; }
     addPlaceModal.classList.add("active");
-    document.getElementById("selectedCoordsText").style.display = "block";
+    
+    const coordsText = document.getElementById("selectedCoordsText");
+    coordsText.innerText = "📍 Manual location selected!";
+    coordsText.style.color = "#1b3899";
+    coordsText.style.display = "block";
 });
 
 document.getElementById("submitPlaceBtn").addEventListener("click", async () => {
@@ -358,8 +410,8 @@ document.getElementById("submitPlaceBtn").addEventListener("click", async () => 
     if (is24hCheckbox.checked) openTime = "24 Hours";
     else if (placeTimeFrom.value && placeTimeTo.value) openTime = `${placeTimeFrom.value} - ${placeTimeTo.value}`;
 
-    if (!title) return alert("Please enter a place name.");
-    if (!newPlaceCoords) return alert("Please pick a location on the map.");
+    if (!title) return showToast("Please enter a place name.", "error");
+    if (!newPlaceCoords) return showToast("Please pick a location on the map.", "error");
 
     const payload = { title, lat: newPlaceCoords.lat, lng: newPlaceCoords.lng, openTime, access, note };
 
@@ -370,11 +422,11 @@ document.getElementById("submitPlaceBtn").addEventListener("click", async () => 
         });
 
         if (response.ok) {
-            alert("Place submitted successfully! Pending admin review.");
+            showToast("Place submitted successfully! Pending admin review.", "success");
             addPlaceModal.classList.remove("active");
             resetForm();
-        } else alert("Failed to submit place.");
-    } catch (error) { console.error("Error submitting:", error); }
+        } else showToast("Failed to submit place.", "error");
+    } catch (error) { console.error("Error submitting:", error); showToast("Failed to submit place.", "error"); }
 });
 
 function resetForm() {
@@ -396,5 +448,64 @@ function toggleSatelliteMode() { map.setMapTypeId(document.getElementById("satel
 async function loadTranslations() { try { translations = await (await fetch("languages.json")).json(); updatePageText(); } catch (error) { console.error(error); } }
 function updatePageText() { document.querySelectorAll("[data-i18n]").forEach((el) => { if (translations[currentLang]?.[el.getAttribute("data-i18n")]) el.innerText = translations[currentLang][el.getAttribute("data-i18n")]; }); document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { if (translations[currentLang]?.[el.getAttribute("data-i18n-placeholder")]) el.placeholder = translations[currentLang][el.getAttribute("data-i18n-placeholder")]; }); }
 function changeLanguage(langCode) { currentLang = langCode; updatePageText(); }
-const darkModeMapStyles = [{ elementType: "geometry", stylers: [{ color: "#242f3e" }] }, { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] }, { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] }, { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] }, { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] }, { featureType: "transit.line", stylers: [{ visibility: "off" }] }, { featureType: "administrative.land_parcel", stylers: [{ visibility: "off" }] }, { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }];
-function toggleDarkMode() { const isDark = document.getElementById("darkModeToggle").checked; document.body.classList.toggle("dark-theme", isDark); map.setOptions({ styles: isDark ? darkModeMapStyles : [] }); }
+
+const cleanLightModeStyles = [
+    {
+        // HIDE: Businesses (Cafes, shops, 7-Elevens)
+        featureType: "poi.business",
+        stylers: [{ visibility: "off" }]
+    },
+    {
+        // HIDE: Transit stations (Bus stops, etc.)
+        featureType: "transit",
+        stylers: [{ visibility: "off" }]
+    },
+    {
+        // KEEP: Landscape labels (This keeps Building Names, Parks, and Faculties)
+        featureType: "landscape",
+        elementType: "labels",
+        stylers: [{ visibility: "on" }]
+    },
+    {
+        // KEEP: Road names (To help with navigation)
+        featureType: "road",
+        elementType: "labels",
+        stylers: [{ visibility: "on" }]
+    }
+];
+
+const darkModeMapStyles = [
+    { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+    {
+        // HIDE: Businesses even in dark mode
+        featureType: "poi.business",
+        stylers: [{ visibility: "off" }]
+    },
+    {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#38414e" }]
+    },
+    {
+        featureType: "road",
+        elementType: "geometry.stroke",
+        stylers: [{ color: "#212a37" }]
+    },
+    {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [{ color: "#17263c" }]
+    }
+];
+
+function toggleDarkMode() {
+    const isDark = document.getElementById("darkModeToggle").checked;
+    document.body.classList.toggle("dark-theme", isDark);
+    
+    // Apply the clean version of whichever theme is selected
+    map.setOptions({ 
+        styles: isDark ? darkModeMapStyles : cleanLightModeStyles 
+    });
+}

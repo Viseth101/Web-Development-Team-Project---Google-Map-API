@@ -38,11 +38,21 @@
   {
     "id": 5,
     "building": "Test Marker 2",
-    "operatingHours": "08:00 - 20:00",
-    "access": "ALL (Staff & Students)",
+    "operatingHours": "24 Hours",
+    "access": "ALL (Staff &amp; Students)",
     "note": "",
     "isPending": true,
-    "lat": 13.820908179169304,
-    "lng": 100.03967538273668
+    "lat": 13.821001743997915,
+    "lng": 100.03968487891068
+  },
+  {
+    "id": 6,
+    "building": "Test Marker 3",
+    "operatingHours": "24 Hours",
+    "access": "ALL (Staff &amp; Students)",
+    "note": "",
+    "isPending": true,
+    "lat": 13.820091888077222,
+    "lng": 100.0395191662765
   }
 ]

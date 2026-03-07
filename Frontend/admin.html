@@ -1,127 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Silpakorn Map</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f3f4f6;
-            padding: 20px;
-            color: #1f2937;
-            margin: 0;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; overflow: hidden; color: #1f2937; }
+        
+        #loginOverlay, #editModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        #editModalOverlay { display: none; }
+        .modal-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 350px; }
+        .modal-box h2 { margin-top: 0; color: #1b3899; }
+        .modal-box input, .modal-box select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .modal-box button { padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%; margin-top: 5px; }
+        .btn-primary { background: #1b3899; color: white; }
+        .btn-primary:hover { background: #152b75; }
+        .btn-cancel { background: #e5e7eb; color: #1f2937; margin-bottom: 10px; }
+        
+        #dashboard { display: none; height: 100vh; width: 100vw; }
+        #sidebar { width: 450px; background: white; height: 100%; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 10; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px 20px 0 20px; background: #ffffff; position: sticky; top: 0; z-index: 5; }
+        .sidebar-header h1 { margin: 0; color: #1b3899; font-size: 22px; }
+        
+        .tabs { display: flex; border-bottom: 2px solid #e5e7eb; margin-top: 15px; }
+        .tab { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; font-weight: 600; color: #6b7280; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab:hover { color: #1b3899; }
+        .tab.active { color: #1b3899; border-bottom-color: #1b3899; }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
+        .tab-content { display: none; padding: 20px; flex: 1; }
+        .tab-content.active { display: block; }
+        
+        #mapView { flex: 1; height: 100%; background: #e5e3df; position: relative; }
+        
+        .card { border: 1px solid #d1d5db; padding: 16px; border-radius: 8px; margin-bottom: 16px; background: #fafafa; transition: border-color 0.2s, box-shadow 0.2s; cursor: pointer; }
+        .card:hover { border-color: #1b3899; box-shadow: 0 4px 10px rgba(27,56,153,0.1); }
+        .card-info h3 { margin: 0 0 8px 0; color: #111827; font-size: 16px; }
+        .card-info p { margin: 4px 0; font-size: 13px; color: #4b5563; }
+        .card-actions { display: flex; gap: 10px; margin-top: 15px; }
+        
+        .btn { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .btn-approve { background-color: #10b981; color: white; }
+        .btn-reject { background-color: #ef4444; color: white; }
+        .btn-edit { background-color: #3b82f6; color: white; }
+        .empty-state { text-align: center; color: #6b7280; font-style: italic; padding: 40px 20px; }
 
-        h1 {
-            margin-top: 0;
-            color: #1b3899;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 10px;
-        }
+        /* Toast Notifications */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
 
-        .card {
-            border: 1px solid #d1d5db;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fafafa;
-        }
-
-        .card-info h3 {
-            margin: 0 0 8px 0;
-            color: #111827;
-        }
-
-        .card-info p {
-            margin: 4px 0;
-            font-size: 14px;
-            color: #4b5563;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: opacity 0.2s;
-        }
-
-        .btn:hover {
-            opacity: 0.8;
-        }
-
-        .btn-approve {
-            background-color: #10b981;
-            color: white;
-            margin-right: 8px;
-        }
-
-        .btn-reject {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #6b7280;
-            font-style: italic;
-            padding: 40px 20px;
+        @media(max-width: 768px) {
+            #dashboard { flex-direction: column-reverse; }
+            #sidebar { width: 100%; height: 50vh; }
+            #mapView { width: 100%; height: 50vh; }
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>Admin Dashboard</h1>
-        <p>Review user-submitted places below. Approving a place will make it permanently visible on the map.</p>
-
-        <div id="pendingList">
-            <div class="empty-state">Loading pending places...</div>
+    <div id="loginOverlay">
+        <div class="modal-box" style="text-align: center;">
+            <h2>Admin Login</h2>
+            <input type="password" id="adminPassword" placeholder="Enter Admin Password" onkeypress="if(event.key === 'Enter') login()">
+            <button class="btn-primary" onclick="login()">Unlock Dashboard</button>
         </div>
     </div>
 
+    <div id="editModalOverlay">
+        <div class="modal-box">
+            <h2>Edit Place</h2>
+            <input type="hidden" id="editId">
+            <label>Name:</label>
+            <input type="text" id="editName">
+            <label>Operating Hours:</label>
+            <input type="text" id="editHours">
+            <label>Access:</label>
+            <select id="editAccess">
+                <option value="ALL (Staff & Students)">ALL (Staff & Students)</option>
+                <option value="Staff Only">Staff Only</option>
+            </select>
+            <label>Note (Optional):</label>
+            <input type="text" id="editNote">
+            <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <h1>Admin Dashboard</h1>
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('pending', this)">Pending Submissions</div>
+                    <div class="tab" onclick="switchTab('manage', this)">Manage All Places</div>
+                </div>
+            </div>
+            
+            <div id="pendingTab" class="tab-content active">
+                <div id="pendingList"><div class="empty-state">Loading pending places...</div></div>
+            </div>
+
+            <div id="manageTab" class="tab-content">
+                <div id="manageList"><div class="empty-state">Loading places...</div></div>
+            </div>
+        </div>
+        <div id="mapView"></div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
     <script>
-        // 1. Fetch the data from the server
+        let sessionPassword = "";
+        let map;
+        let adminMarkers = [];
+        let currentTab = "pending";
+
+        function showToast(message, type = "success") {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        async function login() {
+            const passInput = document.getElementById("adminPassword").value;
+            if(!passInput) return showToast("Please enter a password.", "error");
+
+            try {
+                const res = await fetch('/api/admin-login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: passInput })
+                });
+
+                if (res.ok) {
+                    sessionPassword = passInput;
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'flex';
+                    initAdminMap();
+                } else { showToast("Incorrect password!", "error"); }
+            } catch(e) { console.error("Login error", e); }
+        }
+
+        async function initAdminMap() {
+            try {
+                const res = await fetch('/api/config');
+                const config = await res.json();
+                
+                window.loadMapData = function() {
+                    map = new google.maps.Map(document.getElementById("mapView"), {
+                        zoom: 16.5, center: { lat: 13.8188, lng: 100.0402 }, disableDefaultUI: false,
+                    });
+                    loadDataForCurrentTab();
+                };
+
+                const script = document.createElement("script");
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${config.mapsApiKey}&callback=loadMapData`;
+                script.async = true; script.defer = true;
+                document.head.appendChild(script);
+            } catch (err) { console.error("Failed to load config for map", err); }
+        }
+
+        function switchTab(tabName, element) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            loadDataForCurrentTab();
+        }
+
+        function loadDataForCurrentTab() {
+            if (currentTab === 'pending') fetchPending();
+            if (currentTab === 'manage') fetchAllPlaces();
+        }
+
         async function fetchPending() {
             try {
                 const res = await fetch('/api/pending');
-                const data = await res.json();
-                renderList(data);
-            } catch (err) {
-                console.error("Error fetching pending places", err);
-                document.getElementById('pendingList').innerHTML = '<div class="empty-state">Error loading data. Is the server running?</div>';
-            }
+                renderList(await res.json(), 'pendingList');
+            } catch (err) { console.error(err); }
         }
 
-        // 2. Render the data into HTML cards
-        function renderList(places) {
-            const list = document.getElementById('pendingList');
+        async function fetchAllPlaces() {
+            try {
+                const res = await fetch('/api/all-places');
+                renderList(await res.json(), 'manageList');
+            } catch (err) { console.error(err); }
+        }
+
+        function renderList(places, containerId) {
+            const list = document.getElementById(containerId);
             list.innerHTML = '';
+            
+            adminMarkers.forEach(m => m.setMap(null));
+            adminMarkers = [];
 
             if (places.length === 0) {
-                list.innerHTML = '<div class="empty-state">🎉 No pending places to review. You are all caught up!</div>';
+                list.innerHTML = `<div class="empty-state">🎉 No places found here!</div>`;
                 return;
             }
 
             places.forEach(place => {
+                let color = "#10b981"; 
+                if (currentTab === 'pending') color = "#eab308"; 
+                else if (place.access && place.access.includes("Staff Only")) color = "#f59e0b"; 
+
+                const svgIcon = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                        <circle cx="14" cy="16" r="10" fill="rgba(0,0,0,0.3)" />
+                        <circle cx="14" cy="14" r="10" fill="${color}" stroke="#ffffff" stroke-width="2.5" />
+                    </svg>
+                `;
+
+                const marker = new google.maps.Marker({
+                    position: { lat: place.lat, lng: place.lng },
+                    map: map, title: place.building, animation: google.maps.Animation.DROP,
+                    icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgIcon), anchor: new google.maps.Point(14, 14) }
+                });
+                adminMarkers.push(marker);
+
                 const card = document.createElement('div');
                 card.className = 'card';
+                card.onclick = () => {
+                    map.panTo(marker.getPosition()); map.setZoom(18);
+                    marker.setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => marker.setAnimation(null), 1500);
+                };
+
+                let actionButtons = "";
+                if (currentTab === 'pending') {
+                    actionButtons = `
+                        <button class="btn btn-approve" onclick="handleAction(event, ${place.id}, 'approve')">Approve ✓</button>
+                        <button class="btn btn-reject" onclick="handleAction(event, ${place.id}, 'reject')">Reject ✕</button>
+                    `;
+                } else {
+                    const placeDataStr = encodeURIComponent(JSON.stringify(place));
+                    actionButtons = `
+                        <button class="btn btn-edit" onclick="openEditModal(event, '${placeDataStr}')">Edit ✏️</button>
+                        <button class="btn btn-reject" onclick="handleAction(event, ${place.id}, 'reject')">Delete 🗑️</button>
+                    `;
+                }
+
                 card.innerHTML = `
                     <div class="card-info">
                         <h3>📍 ${place.building}</h3>
@@ -129,39 +249,68 @@
                         <p><strong>👥 Access:</strong> ${place.access}</p>
                         <p><strong>📝 Note:</strong> ${place.note || 'None'}</p>
                     </div>
-                    <div class="card-actions">
-                        <button class="btn btn-approve" onclick="handleAction(${place.id}, 'approve')">Approve ✓</button>
-                        <button class="btn btn-reject" onclick="handleAction(${place.id}, 'reject')">Reject ✕</button>
-                    </div>
+                    <div class="card-actions">${actionButtons}</div>
                 `;
                 list.appendChild(card);
             });
         }
 
-        // 3. Handle the Approve or Reject button clicks
-        async function handleAction(id, action) {
-            if (!confirm(`Are you sure you want to ${action} this place?`)) return;
+        async function handleAction(event, id, action) {
+            event.stopPropagation();
+            if (!confirm(`Are you sure you want to ${action === 'reject' ? 'delete/reject' : 'approve'} this place?`)) return;
 
             try {
                 const res = await fetch(`/api/${action}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id, password: sessionPassword })
+                });
+                if (res.ok) {
+                    showToast(`Successfully completed action.`);
+                    loadDataForCurrentTab();
+                } else showToast("Action failed. Check password.", "error");
+            } catch (err) { console.error(err); }
+        }
+
+        function openEditModal(event, placeDataStr) {
+            event.stopPropagation();
+            const place = JSON.parse(decodeURIComponent(placeDataStr));
+            
+            document.getElementById('editId').value = place.id;
+            document.getElementById('editName').value = place.building;
+            document.getElementById('editHours').value = place.operatingHours;
+            document.getElementById('editAccess').value = place.access || "ALL (Staff & Students)";
+            document.getElementById('editNote').value = place.note || "";
+            
+            document.getElementById('editModalOverlay').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModalOverlay').style.display = 'none';
+        }
+
+        async function saveEdit() {
+            const payload = {
+                password: sessionPassword,
+                id: parseInt(document.getElementById('editId').value),
+                building: document.getElementById('editName').value,
+                operatingHours: document.getElementById('editHours').value,
+                access: document.getElementById('editAccess').value,
+                note: document.getElementById('editNote').value,
+            };
+
+            try {
+                const res = await fetch('/api/edit-place', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
                 if (res.ok) {
-                    fetchPending(); // Refresh the list automatically
-                } else {
-                    alert(`Failed to ${action} place.`);
-                }
-            } catch (err) {
-                console.error(`Error during ${action}`, err);
-            }
+                    closeEditModal();
+                    showToast("Place updated successfully!", "success");
+                    loadDataForCurrentTab();
+                } else showToast("Failed to save changes.", "error");
+            } catch (err) { console.error(err); }
         }
-
-        // Start the app
-        fetchPending();
     </script>
 </body>
-
 </html>

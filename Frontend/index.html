@@ -20,7 +20,6 @@
             <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search places..." oninput="handleSearchInput()">
             <button id="filterToggleBtn" class="filter-icon-btn" title="Filter by Time">⏳</button>
         </div>
-
         <ul id="searchSuggestions" class="suggestions-list"></ul>
 
         <div id="filterPopup" class="filter-popup">
@@ -41,8 +40,6 @@
         </div>
     </div>
 
-    <button id="mobileMenuToggle" class="hamburger-btn mobile-only-btn">☰</button>
-
     <div class="map-control legend-control" id="mapLegend">
         <div class="legend-header" onclick="toggleLegend()">
             <strong style="font-size: 14px;">Legend</strong>
@@ -54,6 +51,8 @@
             <div class="legend-item"><span class="legend-color" style="background-color: #f59e0b;"></span> Staff Only</div>
         </div>
     </div>
+
+    <button id="mobileMenuToggle" class="hamburger-btn mobile-only-btn">☰</button>
 
     <div class="map-control bottom-left-controls" id="bottomControls">
         <label class="toggle-label">
@@ -138,6 +137,8 @@
             <button id="confirmMarkerBtn" class="btn-primary" style="margin: 0;">Confirm Location</button>
         </div>
     </div>
+
+    <div id="toast" class="toast"></div>
 
     <script src="script.js"></script>
 </body>

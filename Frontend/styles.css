@@ -67,8 +67,11 @@ input[type="checkbox"]:checked ~ .toggle-dot { transform: translateX(16px); }
 .filter-popup { position: absolute; top: 110%; right: 0; width: 280px; max-width: 90vw; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); z-index: 20; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease; }
 .filter-popup.active { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
 
+/* Make sure Google Places autocomplete shows above our modal */
+.pac-container { z-index: 10000 !important; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
 /* ========================================== */
-/* 6. MODALS & FABS                           */
+/* 6. MODALS, FABS & TOASTS                   */
 /* ========================================== */
 .fab { position: absolute; bottom: 30px; right: 30px; width: 60px; height: 60px; background-color: #1b3899; color: white; border: none; border-radius: 50%; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background-color 0.2s; }
 .fab:hover { transform: scale(1.05); background-color: #152b75; }
@@ -87,6 +90,12 @@ input[type="checkbox"]:checked ~ .toggle-dot { transform: translateX(16px); }
 .map-confirm-ui { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; visibility: hidden; background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); z-index: 50; text-align: center; transition: all 0.3s ease; }
 .map-confirm-ui.active { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
 .map-confirm-ui p { margin: 0 0 12px 0; font-weight: 500; color: #1f2937; }
+
+/* Toast Notifications */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
+.toast.success { background-color: #10b981; }
+.toast.error { background-color: #ef4444; }
 
 /* ========================================== */
 /* 7. GOOGLE MAPS POPUP OVERRIDES & ANIMATION */
@@ -124,44 +133,33 @@ body.dark-theme .hamburger-btn { background: #374151; color: white; }
 /* ========================================== */
 .mobile-only-btn { display: none; }
 
-/* TABLET (< 600px) */
 @media (max-width: 600px) {
     .top-left-logo { top: 12px; left: 10px; padding: 12px 14px; max-width: 45%; border-radius: 12px; }
     .top-left-logo strong { font-size: 1.05rem; }
     .top-left-logo img { width: 28px; height: 28px; }
-
     .top-right-search { top: 12px; right: 10px; padding: 8px; border-radius: 12px; }
     .top-right-search input { width: 140px; font-size: 13px; padding: 8px 40px 8px 34px; box-sizing: border-box; }
-
     .legend-control { bottom: 100px; left: 10px; padding: 10px; width: 100px; }
-
     .bottom-left-controls { bottom: 25px; left: 10px; right: 10px; display: flex; flex-direction: row; justify-content: space-between; align-items: stretch; padding: 12px 16px; border-radius: 16px; width: calc(100% - 20px); box-sizing: border-box; }
     #lang-select { font-size: 13px; padding: 6px 10px; width: 100px; min-width: 100px; margin-left: 10px; }
     .toggle-label { font-size: 0.85rem; gap: 6px; white-space: nowrap; width: 100%; }
     .toggle-wrapper { width: 44px; height: 26px; }
     .toggle-dot { width: 18px; height: 18px; top: 4px; left: 4px; }
-    
     #addPlaceFab { bottom: 90px; right: 15px; width: 50px; height: 50px; }
     .locate-fab { bottom: 150px; right: 15px; width: 50px; height: 50px; font-size: 20px; }
 }
 
-/* SMALL MOBILE (< 480px) */
 @media (max-width: 480px) {
     .mobile-only-btn { display: block; background: none; border: none; font-size: 20px; cursor: pointer; color: inherit; }
     .top-left-logo { width: 90%; justify-content: space-between; top: 15px; left: 50%; transform: translateX(-50%); max-width: 85%; }
-    
     .top-right-search { top: 65px; left: 50%; right: auto; transform: translateX(-50%) translateY(-20px); width: 90%; opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .top-right-search.mobile-search-active { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
     .top-right-search input { width: 100%; box-sizing: border-box; }
-
     .hamburger-btn { position: absolute; bottom: 30px; left: 15px; z-index: 20; background: white; padding: 12px 15px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
     .legend-control { bottom: 90px; left: 15px; }
-
     .bottom-left-controls { flex-direction: column; width: auto; min-width: 180px; right: auto; align-items: stretch; gap: 12px; bottom: 90px; left: 15px; transform: translateY(20px) scale(0.9); opacity: 0; visibility: hidden; z-index: 20; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .bottom-left-controls.menu-expanded { transform: translateY(0) scale(1); opacity: 1; visibility: visible; }
     #lang-select { margin-left: 0; width: 100%; min-width: unset; }
-    
     #addPlaceFab { bottom: 35px; right: 15px; }
     .locate-fab { bottom: 95px; right: 15px; }
 }
