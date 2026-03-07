@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "building": "Science Building 1",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff only",
+    "lat": 13.81925720249263, 
+    "lng": 100.04134795354024,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 2,
+    "building": "Science Building 2",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff only",
+    "lat": 13.81911389343137, 
+    "lng": 100.04067644474276,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 3,
+    "building": "Science Building 3",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff only",
+    "lat": 13.820056095281197, 
+    "lng": 100.04085615276648,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 4,
+    "building": "Science Building 4",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff only",
+    "lat": 13.82039988634533, 
+    "lng": 100.04063872475282,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 5,
+    "building": "Integrated Learning Building (RWT), Faculty of Science",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.81987443181979, 
+    "lng": 100.04054973555881,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 6,
+    "building": "Petcharat Restroom",
+    "operatingHours": "08:00 - 10:00",
+    "note": "South",
+    "lat": 13.820689650924594, 
+    "lng": 100.03959199108897,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 7,
+    "building": "Petcharat Restroom",
+    "operatingHours": "08:00 - 10:00",
+    "note": "North",
+    "lat": 13.821249785152679, 
+    "lng": 100.03949526144609,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 8,
+    "building": "Small Gym WC",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.821208607711673, 
+    "lng": 100.03919435359857,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 9,
+    "building": "Male Dormitory 3 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.821815772281989, 
+    "lng": 100.03945231931654,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 10,
+    "building": "Female Dormitory 1 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.822139100395407, 
+    "lng": 100.0412222519012,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 11,
+    "building": "Female Dormitory 2 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.821920319110447,
+    "lng": 100.04046050450113,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 12,
+    "building": "Female Dormitory 3 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.82116695467575, 
+    "lng": 100.04065898795554,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 13,
+    "building": "Female Dormitory 4 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.82144108324026, 
+    "lng": 100.04026336213978,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 14,
+    "building": "Female Dormitory 5 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.821568363605499, 
+    "lng": 100.0413355976273,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 15,
+    "building": "Female Dormitory 6 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.822082109359206, 
+    "lng": 100.04008602350304,
+    "img": "../Backend/image/RorVorThor.png"
+  },
+  {
+    "id": 16,
+    "building": "Female Dormitory 7 wc",
+    "operatingHours": "08:00 - 10:00",
+    "note": "staff and student",
+    "lat": 13.821268213140643, 
+    "lng": 100.04139233100277,
+    "img": "../Backend/image/RorVorThor.png"
+  }
+]
