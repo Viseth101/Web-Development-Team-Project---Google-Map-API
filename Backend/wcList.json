@@ -2,37 +2,47 @@
   {
     "id": 1,
     "building": "Science Building 1",
-    "operatingHours": "08:00 - 10:00",
-    "note": "staff only",
-    "floor": 1,
+    "operatingHours": "08:00 - 17:00",
+    "access": "Staff Only",
+    "note": "",
     "lat": 13.819161752429082,
     "lng": 100.04126661117972
   },
   {
     "id": 2,
     "building": "อาคารเรียนรวม(รวท.) คณะวิทยาศาสตร์",
-    "operatingHours": "08:00 - 10:00",
-    "note": "staff and student",
-    "floor": 1,
+    "operatingHours": "08:00 - 17:00",
+    "access": "ALL (Staff & Students)",
+    "note": "",
     "lat": 13.819767314399943,
     "lng": 100.04054300484385
   },
   {
     "id": 3,
     "building": "Science Building 3",
-    "operatingHours": "08:00 - 10:00",
-    "note": "staff only",
-    "floor": 1,
+    "operatingHours": "08:00 - 17:00",
+    "access": "Staff Only",
+    "note": "",
     "lat": 13.819969232087898,
     "lng": 100.04102347204727
   },
   {
     "id": 4,
-    "building": "New Cafe",
-    "operatingHours": "Not specified",
-    "note": "User submitted - Pending review",
-    "floor": "N/A",
-    "lat": 13.82018044123707,
-    "lng": 100.03997420364557
+    "building": "Test Marker 1",
+    "operatingHours": "24 Hours",
+    "access": "ALL (Staff & Students)",
+    "note": "This is a test submission",
+    "lat": 13.820508404849464,
+    "lng": 100.04075487171416
+  },
+  {
+    "id": 5,
+    "building": "Test Marker 2",
+    "operatingHours": "08:00 - 20:00",
+    "access": "ALL (Staff & Students)",
+    "note": "",
+    "isPending": true,
+    "lat": 13.820908179169304,
+    "lng": 100.03967538273668
   }
 ]

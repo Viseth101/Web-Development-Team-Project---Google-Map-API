@@ -1,11 +1,12 @@
 [
   {
-    "title": "New Cafe",
-    "lat": 13.819677738560928,
-    "lng": 100.03989292662614,
-    "openTime": "Not specified",
-    "id": 1772809036979,
-    "status": "pending",
-    "submittedAt": "2026-03-06T14:57:16.979Z"
+    "id": 5,
+    "building": "Test Marker 2",
+    "operatingHours": "08:00 - 20:00",
+    "access": "ALL (Staff & Students)",
+    "note": "",
+    "isPending": true,
+    "lat": 13.820908179169304,
+    "lng": 100.03967538273668
   }
 ]

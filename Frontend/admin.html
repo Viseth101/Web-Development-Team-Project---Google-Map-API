@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Silpakorn Map</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+            padding: 20px;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #1b3899;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .card {
+            border: 1px solid #d1d5db;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        .card-info h3 {
+            margin: 0 0 8px 0;
+            color: #111827;
+        }
+
+        .card-info p {
+            margin: 4px 0;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn-approve {
+            background-color: #10b981;
+            color: white;
+            margin-right: 8px;
+        }
+
+        .btn-reject {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <p>Review user-submitted places below. Approving a place will make it permanently visible on the map.</p>
+
+        <div id="pendingList">
+            <div class="empty-state">Loading pending places...</div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Fetch the data from the server
+        async function fetchPending() {
+            try {
+                const res = await fetch('/api/pending');
+                const data = await res.json();
+                renderList(data);
+            } catch (err) {
+                console.error("Error fetching pending places", err);
+                document.getElementById('pendingList').innerHTML = '<div class="empty-state">Error loading data. Is the server running?</div>';
+            }
+        }
+
+        // 2. Render the data into HTML cards
+        function renderList(places) {
+            const list = document.getElementById('pendingList');
+            list.innerHTML = '';
+
+            if (places.length === 0) {
+                list.innerHTML = '<div class="empty-state">🎉 No pending places to review. You are all caught up!</div>';
+                return;
+            }
+
+            places.forEach(place => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-info">
+                        <h3>📍 ${place.building}</h3>
+                        <p><strong>🕒 Hours:</strong> ${place.operatingHours}</p>
+                        <p><strong>👥 Access:</strong> ${place.access}</p>
+                        <p><strong>📝 Note:</strong> ${place.note || 'None'}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-approve" onclick="handleAction(${place.id}, 'approve')">Approve ✓</button>
+                        <button class="btn btn-reject" onclick="handleAction(${place.id}, 'reject')">Reject ✕</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // 3. Handle the Approve or Reject button clicks
+        async function handleAction(id, action) {
+            if (!confirm(`Are you sure you want to ${action} this place?`)) return;
+
+            try {
+                const res = await fetch(`/api/${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+
+                if (res.ok) {
+                    fetchPending(); // Refresh the list automatically
+                } else {
+                    alert(`Failed to ${action} place.`);
+                }
+            } catch (err) {
+                console.error(`Error during ${action}`, err);
+            }
+        }
+
+        // Start the app
+        fetchPending();
+    </script>
+</body>
+
+</html>
