@@ -396,39 +396,5 @@ app.post("/api/admin-add-place", upload.single('image'), async (req, res) => {
     } catch (err) { res.status(500).json({ error: "Server error adding place." }); }
 });
 
-async function initializeDatabase() {
-    const volPath = "/app/Database/place_data.json";
-    const githubPath = path.join(__dirname, "Database", "place_data.json");
-    const assetDir = "/app/Database/place_data_asset";
-
-    try {
-        // Use fs.promises if your top-level 'fs' is the standard callback version
-        await fs.promises.access(volPath);
-        console.log("✅ Database found in Volume.");
-    } catch (err) {
-        console.log("⚠️ Volume empty. Seeding data from GitHub...");
-        try {
-            // Ensure the directory exists first
-            await fs.promises.mkdir(path.dirname(volPath), { recursive: true });
-            await fs.promises.mkdir(assetDir, { recursive: true });
-            
-            const data = await fs.promises.readFile(githubPath, 'utf8');
-            await fs.promises.writeFile(volPath, data);
-            console.log("🚀 Data successfully seeded to Volume!");
-        } catch (seedErr) {
-            console.error("❌ Failed to seed data:", seedErr);
-        }
-    }
-}
-
-initializeDatabase().then(() => {
-    // 2. Only AFTER the database is seeded, we start the server
-    const PORT = process.env.PORT || 8080;
-    app.listen(PORT, () => {
-        console.log(`🚀 Server is officially live on port ${PORT}`);
-    });
-}).catch(err => {
-    console.error("🚨 Critical failure during database initialization:", err);
-    // Start the server anyway so the app doesn't stay 'dead'
-    app.listen(process.env.PORT || 8080); 
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`); });
