@@ -43,6 +43,7 @@ Silpakorn-WC-Map/
 │   ├── languages.json              # Multilingual dictionary
 │   └── assets/                     # Static UI assets (icons, logos)
 └── .gitignore
+```
 
 🚀 Installation & Setup
 To run this project locally, you will need Node.js installed on your machine and a Google Maps API Key with the Maps JavaScript API and Places API enabled.
