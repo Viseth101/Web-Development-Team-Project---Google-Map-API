@@ -3,10 +3,10 @@
     "id": 1,
     "building": "Science Building 1",
     "operatingHours": "08:00 - 17:00",
-    "access": "Staff Only",
+    "access": "ALL (Staff &amp; Students)",
     "note": "",
-    "lat": 13.819161752429082,
-    "lng": 100.04126661117972
+    "lat": 13.819142523259739,
+    "lng": 100.04130577136586
   },
   {
     "id": 2,
@@ -41,7 +41,6 @@
     "operatingHours": "24 Hours",
     "access": "ALL (Staff &amp; Students)",
     "note": "",
-    "isPending": true,
     "lat": 13.821001743997915,
     "lng": 100.03968487891068
   },
