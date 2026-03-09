@@ -56,6 +56,12 @@ To run this project locally, you will need **Node.js** installed on your machine
     > When deploying to Railway with the project root set to the repository, a helper
     > script `start.sh` at the root will automatically install dependencies and launch
     > the backend. It simply changes into `Backend/` and runs `npm start`.
+    >
+    > **Important:** Buildpacks detect Node.js by looking for a `package.json` at the
+    > project root. A minimal `package.json` now lives at the top level so that
+    > `npm`/`node` are installed before `start.sh` executes; without it you would see
+    > "npm: command not found" in the container logs. Alternatively you can manually
+    > set the Railway buildpack to **Node.js** or use a custom `Dockerfile`.
 
 2. **Install backend dependencies:**
     npm install
