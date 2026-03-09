@@ -51,7 +51,11 @@ To run this project locally, you will need **Node.js** installed on your machine
 
 1. **Clone the repository:**
     git clone https://github.com/yourusername/Silpakorn-WC-Map.git
-    cd Silpakorn-WC-Map/Backend
+    cd Silpakorn-WC-Map
+
+    > When deploying to Railway with the project root set to the repository, a helper
+    > script `start.sh` at the root will automatically install dependencies and launch
+    > the backend. It simply changes into `Backend/` and runs `npm start`.
 
 2. **Install backend dependencies:**
     npm install
