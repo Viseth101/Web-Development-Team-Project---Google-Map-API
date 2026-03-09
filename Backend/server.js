@@ -1,14 +1,15 @@
+// === imports & configuration ===
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs").promises;
-// synchronous fs access for initial volume copy
-const fsSync = require("fs");
+const fsSync = require("fs");          // synchronous filesystem calls when needed
 const path = require("path");
 const app = express();
 const helmet = require("helmet");
 
+// === rate limiting ===
 const rateLimit = require("express-rate-limit");
 
 // Limit submissions from the same IP to 5 requests per 15 minutes
@@ -18,76 +19,14 @@ const submitLimiter = rateLimit({
     message: { error: "Too many submissions from this IP. Please try again in 15 minutes." }
 });
 
-// allow override of database directory (e.g. Railway mounts)
-const DEFAULT_DB_PATH = path.join(__dirname, "Database");
-const VOLUME_DB_PATH = process.env.DB_PATH || DEFAULT_DB_PATH;
-
-// asset directory lives inside whichever data folder we're using
-const ASSET_DIR = path.join(VOLUME_DB_PATH, "place_data_asset");
+// === filesystem constants ===
+// keep uploaded images next to JSON data
+const ASSET_DIR = "/app/Database/place_data_asset";
 if (!fsSync.existsSync(ASSET_DIR)) {
-    fsSync.mkdirSync(ASSET_DIR, { recursive: true });
+    fsSync.mkdirSync(ASSET_DIR);
 }
 
-// INIT: Copy Database files from repo to volume on first startup
-async function initializeVolume() {
-    const volumePath = VOLUME_DB_PATH;
-    const repoPath = DEFAULT_DB_PATH; // original copy in repo
-    
-    try {
-        // Ensure volume directory exists
-        if (!fsSync.existsSync(volumePath)) {
-            fsSync.mkdirSync(volumePath, { recursive: true });
-        }
-        
-        // Check if volume is empty
-        const volumeFiles = await fs.readdir(volumePath).catch(() => []);
-        
-        if (volumeFiles.length === 0) {
-            console.log("📁 Volume empty, copying initial data from repo...");
-            const repoFiles = await fs.readdir(repoPath);
-            
-            for (const file of repoFiles) {
-                const src = path.join(repoPath, file);
-                const dest = path.join(volumePath, file);
-                const stat = await fs.stat(src);
-                
-                if (stat.isDirectory()) {
-                    await copyDirRecursive(src, dest);
-                } else {
-                    await fs.copyFile(src, dest);
-                }
-            }
-            console.log("✅ Initial data copied to volume");
-        }
-    } catch (err) {
-        console.error("⚠️ Volume initialization error:", err.message);
-    }
-}
-
-async function copyDirRecursive(src, dest) {
-    await fs.mkdir(dest, { recursive: true });
-    const files = await fs.readdir(src);
-    for (const file of files) {
-        const srcFile = path.join(src, file);
-        const destFile = path.join(dest, file);
-        const stat = await fs.stat(srcFile);
-        if (stat.isDirectory()) {
-            await copyDirRecursive(srcFile, destFile);
-        } else {
-            await fs.copyFile(srcFile, destFile);
-        }
-    }
-}
-
-// Run initialization during startup and then launch server
-async function startServer() {
-    await initializeVolume();
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`); });
-}
-
-startServer().catch(err => console.error("Failed to start server:", err));
-
+// === file upload setup ===
 const storage = multer.diskStorage({
     destination: ASSET_DIR,
     filename: (req, file, cb) => {
@@ -119,6 +58,7 @@ const upload = multer({
     }
 });
 
+// === middleware ===
 app.use(cors());
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -128,10 +68,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "/Frontend")));
 app.use("/place_data_asset", express.static(ASSET_DIR));
 
+// === utility helpers ===
 const CAMPUS_BOUNDS = { south: 13.812, north: 13.825, west: 100.034, east: 100.047 };
 function isWithinCampus(lat, lng) {
   return (lat >= CAMPUS_BOUNDS.south && lat <= CAMPUS_BOUNDS.north && lng >= CAMPUS_BOUNDS.west && lng <= CAMPUS_BOUNDS.east);
 }
+
 
 function sanitizeInput(str) {
     if (!str) return "";
@@ -143,9 +85,21 @@ async function readJSON(filePath) {
         const content = await fs.readFile(filePath, "utf-8");
         return JSON.parse(content);
     } catch (e) {
-        if (e.code === 'ENOENT') return []; 
+        if (e.code === 'ENOENT') return []; // missing file -> treat as empty
         console.error(`\n🚨 CRITICAL ERROR: Could not parse JSON. Preventing data wipe!\n`, e);
         throw e; 
+    }
+}
+
+async function writeJSON(filePath, data) {
+    const tempPath = `${filePath}.tmp`;
+    try {
+        // atomic write pattern
+        await fs.writeFile(tempPath, JSON.stringify(data, null, 2));
+        await fs.rename(tempPath, filePath);
+    } catch (err) {
+        console.error(`Failed to write JSON to ${filePath}`, err);
+        throw err;
     }
 }
 
@@ -175,10 +129,10 @@ function checkAccessRole(accessText) {
     return "all";
 }
 
-// FIX: Generate unique ID by checking BOTH files
+// generate next numeric ID by looking at both approved & pending lists
 async function getNextId() {
-    const approved = await readJSON(path.join(VOLUME_DB_PATH, "place_data.json"));
-    const pending = await readJSON(path.join(VOLUME_DB_PATH, "pending_places.json"));
+    const approved = await readJSON(path.join(__dirname, "Database", "place_data.json"));
+    const pending = await readJSON(path.join(__dirname, "Database", "pending_places.json"));
     const allIds = [...approved.map(p => p.id || 0), ...pending.map(p => p.id || 0)];
     return allIds.length > 0 ? Math.max(...allIds) + 1 : 1;
 }
@@ -190,7 +144,7 @@ app.get("/wc", async (req, res) => {
         const lang = req.query.lang || "en";
         const safeLang = ALL_LANGS.includes(lang) ? lang : "en";
 
-        const dataPath = path.join(VOLUME_DB_PATH, "place_data.json");
+        const dataPath = path.join(__dirname, "Database", "place_data.json");
         const allPlaces = await readJSON(dataPath);
 
         const approvedPlaces = allPlaces.map((place) => {
@@ -204,7 +158,7 @@ app.get("/wc", async (req, res) => {
             };
         });
 
-        const pendingPath = path.join(VOLUME_DB_PATH, "pending_places.json");
+        const pendingPath = path.join(__dirname, "Database", "pending_places.json");
         const pendingData = await readJSON(pendingPath);
 
         const formattedPending = pendingData.map((p) => {
@@ -252,22 +206,21 @@ app.post("/api/submit-place", submitLimiter, upload.single('image'), async (req,
         const accessType = checkAccessRole(access);
         let imgPath = req.file ? "/place_data_asset/" + req.file.filename : "";
 
-        const pendingPath = path.join(VOLUME_DB_PATH, "pending_places.json");
+        const pendingPath = path.join(__dirname, "Database", "pending_places.json");
         let pendingPlaces = await readJSON(pendingPath);
 
         const nextId = await getNextId(); 
 
         pendingPlaces.push({
-            id: nextId, 
-            building, 
-            operatingHours: openTime, 
-            accessType, 
-            note, 
+            id: nextId,
+            building,
+            operatingHours: openTime,
+            accessType,
+            note,
             img: imgPath,
-            isPending: true, 
-            lat, 
+            isPending: true,
+            lat,
             lng
-            // removed detectedLang entirely
         });
 
         await writeJSON(pendingPath, pendingPlaces);
@@ -285,13 +238,13 @@ app.post("/api/admin-login", (req, res) => {
 });
 
 app.get("/api/pending", async (req, res) => {
-    try { res.json(await readJSON(path.join(VOLUME_DB_PATH, "pending_places.json"))); } 
+    try { res.json(await readJSON(path.join(__dirname, "Database", "pending_places.json"))); } 
     catch (err) { res.status(500).json({ error: "Failed to fetch pending places." }); }
 });
 
 app.get("/api/all-places", async (req, res) => {
     try {
-        const dataPath = path.join(VOLUME_DB_PATH, "place_data.json");
+        const dataPath = path.join(__dirname, "Database", "place_data.json");
         const allPlaces = await readJSON(dataPath);
 
         const merged = allPlaces.map((place) => {
@@ -319,7 +272,7 @@ app.post("/api/approve", async (req, res) => {
         const placeToApprove = pending.find((p) => p.id === id);
 
         if (placeToApprove) {
-            const dataPath = path.join(VOLUME_DB_PATH, "place_data.json");
+            const dataPath = path.join(__dirname, "Database", "place_data.json");
             let places = await readJSON(dataPath);
 
             const names = placeToApprove.names || {
