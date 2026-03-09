@@ -18,15 +18,20 @@ const submitLimiter = rateLimit({
     message: { error: "Too many submissions from this IP. Please try again in 15 minutes." }
 });
 
-const ASSET_DIR = "/app/Database/place_data_asset";
-if (!require("fs").existsSync(ASSET_DIR)) {
-    require("fs").mkdirSync(ASSET_DIR);
+// allow override of database directory (e.g. Railway mounts)
+const DEFAULT_DB_PATH = path.join(__dirname, "Database");
+const VOLUME_DB_PATH = process.env.DB_PATH || DEFAULT_DB_PATH;
+
+// asset directory lives inside whichever data folder we're using
+const ASSET_DIR = path.join(VOLUME_DB_PATH, "place_data_asset");
+if (!fsSync.existsSync(ASSET_DIR)) {
+    fsSync.mkdirSync(ASSET_DIR, { recursive: true });
 }
 
 // INIT: Copy Database files from repo to volume on first startup
 async function initializeVolume() {
-    const volumePath = "/app/Database";
-    const repoPath = path.join(__dirname, "Database");
+    const volumePath = VOLUME_DB_PATH;
+    const repoPath = DEFAULT_DB_PATH; // original copy in repo
     
     try {
         // Ensure volume directory exists
@@ -74,8 +79,14 @@ async function copyDirRecursive(src, dest) {
     }
 }
 
-// Run initialization
-initializeVolume().catch(err => console.error("Failed to initialize volume:", err));
+// Run initialization during startup and then launch server
+async function startServer() {
+    await initializeVolume();
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`); });
+}
+
+startServer().catch(err => console.error("Failed to start server:", err));
 
 const storage = multer.diskStorage({
     destination: ASSET_DIR,
@@ -166,8 +177,8 @@ function checkAccessRole(accessText) {
 
 // FIX: Generate unique ID by checking BOTH files
 async function getNextId() {
-    const approved = await readJSON(path.join(__dirname, "Database", "place_data.json"));
-    const pending = await readJSON(path.join(__dirname, "Database", "pending_places.json"));
+    const approved = await readJSON(path.join(VOLUME_DB_PATH, "place_data.json"));
+    const pending = await readJSON(path.join(VOLUME_DB_PATH, "pending_places.json"));
     const allIds = [...approved.map(p => p.id || 0), ...pending.map(p => p.id || 0)];
     return allIds.length > 0 ? Math.max(...allIds) + 1 : 1;
 }
@@ -179,7 +190,7 @@ app.get("/wc", async (req, res) => {
         const lang = req.query.lang || "en";
         const safeLang = ALL_LANGS.includes(lang) ? lang : "en";
 
-        const dataPath = "/app/Database/place_data.json";
+        const dataPath = path.join(VOLUME_DB_PATH, "place_data.json");
         const allPlaces = await readJSON(dataPath);
 
         const approvedPlaces = allPlaces.map((place) => {
@@ -193,7 +204,7 @@ app.get("/wc", async (req, res) => {
             };
         });
 
-        const pendingPath = "/app/Database/pending_places.json";
+        const pendingPath = path.join(VOLUME_DB_PATH, "pending_places.json");
         const pendingData = await readJSON(pendingPath);
 
         const formattedPending = pendingData.map((p) => {
@@ -241,7 +252,7 @@ app.post("/api/submit-place", submitLimiter, upload.single('image'), async (req,
         const accessType = checkAccessRole(access);
         let imgPath = req.file ? "/place_data_asset/" + req.file.filename : "";
 
-        const pendingPath = path.join(__dirname, "Database", "pending_places.json");
+        const pendingPath = path.join(VOLUME_DB_PATH, "pending_places.json");
         let pendingPlaces = await readJSON(pendingPath);
 
         const nextId = await getNextId(); 
@@ -274,13 +285,13 @@ app.post("/api/admin-login", (req, res) => {
 });
 
 app.get("/api/pending", async (req, res) => {
-    try { res.json(await readJSON(path.join(__dirname, "Database", "pending_places.json"))); } 
+    try { res.json(await readJSON(path.join(VOLUME_DB_PATH, "pending_places.json"))); } 
     catch (err) { res.status(500).json({ error: "Failed to fetch pending places." }); }
 });
 
 app.get("/api/all-places", async (req, res) => {
     try {
-        const dataPath = path.join(__dirname, "Database", "place_data.json");
+        const dataPath = path.join(VOLUME_DB_PATH, "place_data.json");
         const allPlaces = await readJSON(dataPath);
 
         const merged = allPlaces.map((place) => {
@@ -308,7 +319,7 @@ app.post("/api/approve", async (req, res) => {
         const placeToApprove = pending.find((p) => p.id === id);
 
         if (placeToApprove) {
-            const dataPath = path.join(__dirname, "Database", "place_data.json");
+            const dataPath = path.join(VOLUME_DB_PATH, "place_data.json");
             let places = await readJSON(dataPath);
 
             const names = placeToApprove.names || {
