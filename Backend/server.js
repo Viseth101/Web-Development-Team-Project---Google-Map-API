@@ -20,10 +20,11 @@ const submitLimiter = rateLimit({
 });
 
 // === filesystem constants ===
-// keep uploaded images next to JSON data
-const ASSET_DIR = "/app/Database/place_data_asset";
+// keep uploaded images next to JSON data (relative to backend folder)
+const ASSET_DIR = path.join(__dirname, "Database", "place_data_asset");
 if (!fsSync.existsSync(ASSET_DIR)) {
-    fsSync.mkdirSync(ASSET_DIR);
+    // recursive flag ensures parent directories are created if missing
+    fsSync.mkdirSync(ASSET_DIR, { recursive: true });
 }
 
 // === file upload setup ===
@@ -65,7 +66,8 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "/Frontend")));
+// serve the separate frontend directory (one level up)
+app.use(express.static(path.join(__dirname, "..", "Frontend")));
 app.use("/place_data_asset", express.static(ASSET_DIR));
 
 // === utility helpers ===
@@ -91,18 +93,7 @@ async function readJSON(filePath) {
     }
 }
 
-async function writeJSON(filePath, data) {
-    const tempPath = `${filePath}.tmp`;
-    try {
-        // atomic write pattern
-        await fs.writeFile(tempPath, JSON.stringify(data, null, 2));
-        await fs.rename(tempPath, filePath);
-    } catch (err) {
-        console.error(`Failed to write JSON to ${filePath}`, err);
-        throw err;
-    }
-}
-
+// atomic-write helper - writes to temp file then renames in one step
 async function writeJSON(filePath, data) {
     const tempPath = `${filePath}.tmp`;
     try {
@@ -417,4 +408,4 @@ app.post("/api/admin-add-place", upload.single('image'), async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`); });
+app.listen(PORT, () => console.log('Server listening on port', PORT));
