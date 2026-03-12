@@ -19,10 +19,10 @@ const submitLimiter = rateLimit({
 });
 
 // === filesystem constants ===
-const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, "Database");
-const ASSET_DIR = path.join(DATA_DIR, "place_data_asset");
-
+// keep uploaded images next to JSON data (relative to backend folder)
+const ASSET_DIR = path.join(__dirname, "Database", "place_data_asset");
 if (!fsSync.existsSync(ASSET_DIR)) {
+    // recursive flag ensures parent directories are created if missing
     fsSync.mkdirSync(ASSET_DIR, { recursive: true });
 }
 
@@ -65,14 +65,8 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false
 }));
 app.use(express.json());
-
-const FRONTEND_PATH = process.env.FRONTEND_PATH ? path.resolve(process.env.FRONTEND_PATH) : path.join(__dirname, "..", "Frontend");
-console.log('Serving frontend from', FRONTEND_PATH);
-if (!fsSync.existsSync(FRONTEND_PATH)) {
-    console.warn('WARNING: frontend path does not exist; check your FRONTEND_PATH or deploy the frontend folder inside the container');
-}
-
-app.use(express.static(FRONTEND_PATH));
+// serve the separate frontend directory (one level up)
+app.use(express.static(path.join(__dirname, "..", "Frontend")));
 app.use("/place_data_asset", express.static(ASSET_DIR));
 
 // === utility helpers ===
@@ -102,10 +96,13 @@ async function readJSON(filePath) {
     }
 }
 
+// atomic-write helper - writes to temp file then renames in one step
 async function writeJSON(filePath, data) {
     const tempPath = `${filePath}.tmp`;
     try {
+        // 1. Write to a temporary file first
         await fs.writeFile(tempPath, JSON.stringify(data, null, 2));
+        // 2. Safely rename it to overwrite the old file (this step is instant/atomic)
         await fs.rename(tempPath, filePath);
     } catch (err) {
         console.error(`Failed to write JSON to ${filePath}`, err);
@@ -226,6 +223,7 @@ app.post("/api/submit-place", submitLimiter, upload.single('image'), async (req,
         if (isNaN(lat) || isNaN(lng)) return res.status(400).json({ error: "Invalid coordinates" });
         if (!isWithinCampus(lat, lng)) return res.status(400).json({ error: "Location must be within campus bounds" });
 
+        // parse the names payload which may come as a JSON string or absent
         const namesObj = req.body.names ? JSON.parse(req.body.names) : { en: req.body.title || "Unnamed" };
         const safeEn = sanitizeInput(namesObj.en);
         
@@ -433,4 +431,4 @@ app.post("/api/admin-add-place", upload.single('image'), async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`); });
+app.listen(PORT, () => console.log('Server listening on port', PORT));

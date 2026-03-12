@@ -9,9 +9,7 @@
 
 A full-stack, interactive web mapping application designed to help the Silpakorn University community locate restrooms across campus. Built with a focus on accessibility, the application supports four languages and features an intuitive Admin Dashboard for community-driven data moderation.
 
-> **Cloud‑ready architecture:** File paths, ports, and front-end locations are configurable via environment variables, allowing the server to run seamlessly in Docker containers or PaaS platforms. Local usage works out-of-the-box with default values.
-
----
+> **This branch is tailored for local deployment only.** Cloud-specific handling will be added on a separate branch; no credentials or remote services are required here.
 
 ## ✨ Key Features
 
@@ -58,43 +56,29 @@ Silpakorn-WC-Map/
 
 To run this project locally, you will need **Node.js** installed on your machine and a **Google Maps API Key** with the Maps JavaScript API and Places API enabled.
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/Silpakorn-WC-Map.git
-cd Silpakorn-WC-Map
-```
+1. **Clone the repository:**
+    git clone https://github.com/yourusername/Silpakorn-WC-Map.git
+    cd Silpakorn-WC-Map/Backend
 
-### 2. Install backend dependencies
-```bash
-cd Backend
-npm install
-```
+2. **Install backend dependencies:**
+    npm install
+    # this also installs development tools (e.g. nodemon) listed under devDependencies
 
-### 3. Environment Setup
-Create a `.env` file inside the `/Backend` directory or configure equivalent variables in your cloud environment. Required values:
-```ini
-PORT=3000
-GOOGLE_API_KEY=your_google_maps_api_key_here
-ADMIN_PASSWORD=your_secure_admin_password
-```
-*(Optional) Overrides useful for cloud container deployments:*
-```ini
-DATA_DIR=/path/to/volume/Database       # Where JSON and assets live
-FRONTEND_PATH=/app/Frontend             # If static files are hosted elsewhere
-```
+3. **Environment Setup:**
+    Copy `.env.example` into `/Backend/.env` and edit the values with your own credentials.
+    ```ini
+    PORT=3000
+    GOOGLE_API_KEY=your_google_maps_api_key_here
+    ADMIN_PASSWORD=your_secure_admin_password
+    ```
 
-### 4. Start the server
-```bash
-npm start
-# or run with nodemon for development:
-npm run dev
-```
+4. **Start the server:**
+    npm start
+    # or run with nodemon for development:
+    npm run dev
 
-### 5. View the app
-Open your browser and navigate to `http://localhost:3000`. 
-To access the admin panel, navigate to `http://localhost:3000/admin.html`.
-
----
+5. **View the app:**
+    Open your browser and navigate to `http://localhost:3000`. To access the admin panel, navigate to `http://localhost:3000/admin.html`.
 
 ## ⚙️ Technical Highlights (For Developers)
 
