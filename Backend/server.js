@@ -24,6 +24,9 @@ const submitLimiter = rateLimit({
 
 // === Database Connection Pool ===
 // A "Pool" keeps the connection alive and handles multiple users simultaneously!
+if (!process.env.DATABASE_URL) {
+    console.warn("DATABASE_URL is not set. Backend cannot connect to MySQL.");
+}
 const pool = mysql.createPool({
     uri: process.env.DATABASE_URL,
     waitForConnections: true,
@@ -159,13 +162,23 @@ async function fetchAdminPlaces(isPendingStatus) {
 }
 
 app.get("/api/pending", async (req, res) => {
-    try { res.json(await fetchAdminPlaces(true)); } 
-    catch (err) { res.status(500).json({ error: "Failed to fetch pending places." }); }
+    try { 
+        res.json(await fetchAdminPlaces(true)); 
+    } 
+    catch (err) { 
+        console.error("Failed to fetch pending places:", err);
+        res.status(500).json({ error: "Failed to fetch pending places." }); 
+    }
 });
 
 app.get("/api/all-places", async (req, res) => {
-    try { res.json(await fetchAdminPlaces(false)); } 
-    catch (err) { res.status(500).json({ error: "Failed to fetch all places." }); }
+    try { 
+        res.json(await fetchAdminPlaces(false)); 
+    } 
+    catch (err) { 
+        console.error("Failed to fetch all places:", err);
+        res.status(500).json({ error: "Failed to fetch all places." }); 
+    }
 });
 
 // 🌟 2. SUBMIT NEW PLACE (With Cloudinary!)
@@ -183,7 +196,13 @@ app.post("/api/submit-place", submitLimiter, upload.single('image'), async (req,
         const openTime = sanitizeInput(req.body.openTime);
         const accessType = checkAccessRole(req.body.access);
         const note = sanitizeInput(req.body.note);
-        const namesObj = req.body.names ? JSON.parse(req.body.names) : { en: req.body.title || "Unnamed" };
+
+        let namesObj;
+        try {
+            namesObj = req.body.names ? JSON.parse(req.body.names) : { en: req.body.title || "Unnamed" };
+        } catch (parseErr) {
+            throw new Error("Invalid names payload.");
+        }
         
         // 🚀 req.file.path is now a Cloudinary URL!
         const imgUrl = req.file ? req.file.path : "";
@@ -247,8 +266,13 @@ app.post("/api/edit-place", upload.single('image'), async (req, res) => {
         let params = [sanitizeInput(operatingHours), checkAccessRole(access)];
         
         if (lat !== undefined && lng !== undefined) {
+            const parsedLat = parseFloat(lat);
+            const parsedLng = parseFloat(lng);
+            if (Number.isNaN(parsedLat) || Number.isNaN(parsedLng) || !isWithinCampus(parsedLat, parsedLng)) {
+                throw new Error("Invalid or out of bounds coordinates.");
+            }
             updateQuery += `, lat=?, lng=?`;
-            params.push(parseFloat(lat), parseFloat(lng));
+            params.push(parsedLat, parsedLng);
         }
         if (req.file) {
             updateQuery += `, img_url=?`;
@@ -291,6 +315,11 @@ app.post("/api/admin-add-place", upload.single('image'), async (req, res) => {
     try {
         await connection.beginTransaction();
         let { lat, lng } = req.body;
+        lat = parseFloat(lat);
+        lng = parseFloat(lng);
+        if (Number.isNaN(lat) || Number.isNaN(lng) || !isWithinCampus(lat, lng)) {
+            throw new Error("Invalid or out of bounds coordinates.");
+        }
         const openTime = sanitizeInput(req.body.operatingHours);
         const accessType = checkAccessRole(req.body.access);
         const note = sanitizeInput(req.body.note);
@@ -299,7 +328,7 @@ app.post("/api/admin-add-place", upload.single('image'), async (req, res) => {
 
         const [result] = await connection.execute(
             `INSERT INTO restrooms (lat, lng, operating_hours, access_type, img_url, is_pending) VALUES (?, ?, ?, ?, ?, false)`,
-            [parseFloat(lat), parseFloat(lng), openTime, accessType, imgUrl]
+            [lat, lng, openTime, accessType, imgUrl]
         );
         
         for (const [lang, name] of Object.entries(namesObj)) {
